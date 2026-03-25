@@ -1,0 +1,41 @@
+{
+  "entities": {
+    "Patient": {
+      "title": "Patient",
+      "description": "Patient record in the healthcare system",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique patient ID" },
+        "name": { "type": "string", "description": "Full name of the patient" },
+        "age": { "type": "integer", "description": "Age of the patient" },
+        "gender": { "type": "string", "description": "Gender of the patient" },
+        "condition": { "type": "string", "description": "Medical condition" },
+        "lastVisit": { "type": "string", "format": "date", "description": "Last visit date" },
+        "status": { "type": "string", "enum": ["Stable", "Critical", "Recovering"], "description": "Current health status" }
+      },
+      "required": ["id", "name", "age", "gender", "condition", "lastVisit", "status"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Healthcare professional user",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email", "description": "User email address" },
+        "role": { "type": "string", "enum": ["admin", "doctor", "nurse"], "description": "User role" },
+        "displayName": { "type": "string", "description": "User display name" }
+      },
+      "required": ["uid", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/patients": {
+      "schema": "Patient",
+      "description": "Collection of patient records"
+    },
+    "/users": {
+      "schema": "User",
+      "description": "Collection of user profiles"
+    }
+  }
+}

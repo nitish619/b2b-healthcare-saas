@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: patients
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required, < 100 chars)
+    //   - age: number (required, 0-150)
+    //   - gender: string (required)
+    //   - condition: string (required, < 500 chars)
+    //   - lastVisit: string (required, date format)
+    //   - status: string (required, enum: Stable, Critical, Recovering)
+    //
+    // Collection: users
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required, email format)
+    //   - role: string (required, enum: admin, doctor, nurse)
+    //   - displayName: string (optional)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || 
+         request.auth.token.email == "nitishchavan937@gmail.com");
+    }
+
+    function isValidPatient(data) {
+      return data.keys().hasAll(['id', 'name', 'age', 'gender', 'condition', 'lastVisit', 'status']) &&
+             data.name is string && data.name.size() < 100 &&
+             data.age is number && data.age >= 0 && data.age <= 150 &&
+             data.condition is string && data.condition.size() < 500 &&
+             data.status in ['Stable', 'Critical', 'Recovering'];
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.role in ['admin', 'doctor', 'nurse'];
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role != 'admin' || isAdmin());
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /patients/{patientId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidPatient(request.resource.data);
+      allow update: if isAuthenticated() && isValidPatient(request.resource.data);
+      allow delete: if isAdmin();
+    }
+  }
+}
