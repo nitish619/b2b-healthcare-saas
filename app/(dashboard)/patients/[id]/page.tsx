@@ -1,14 +1,16 @@
 'use client';
 
+import { use } from 'react';
 import { useStore } from '@/store/useStore';
 import { notFound } from 'next/navigation';
 import { Card, Button } from '@/components/ui';
 import { ArrowLeft, User, Calendar, Activity, Phone, Mail, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
-export default function PatientDetailsPage({ params }: { params: { id: string } }) {
+export default function PatientDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const { patients } = useStore();
-  const patient = patients.find(p => p.id === params.id);
+  const patient = patients.find(p => p.id === resolvedParams.id);
 
   if (!patient) {
     return notFound();
