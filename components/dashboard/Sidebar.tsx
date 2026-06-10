@@ -1,26 +1,32 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Users, 
-  BarChart3, 
-  Settings, 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Users,
+  BarChart3,
+  Settings,
   LogOut,
-  Activity
-} from 'lucide-react';
-import { cn } from '@/components/ui';
+  Activity,
+} from "lucide-react";
+import { cn } from "@/components/ui";
+import { supabase } from "@/lib/supabase";
 
 const navItems = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Patients', href: '/patients', icon: Users },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Patients", href: "/patients", icon: Users },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    // The onAuthStateChange listener in layout.tsx will redirect to /login
+  };
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-card text-card-foreground">
@@ -37,9 +43,9 @@ export function Sidebar() {
               href={item.href}
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                isActive 
-                  ? "bg-primary text-primary-foreground" 
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
               )}
             >
               <item.icon className="mr-3 h-5 w-5" />
@@ -49,11 +55,8 @@ export function Sidebar() {
         })}
       </nav>
       <div className="border-t p-4">
-        <button 
-          onClick={() => {
-            localStorage.removeItem('isAuthenticated');
-            window.location.href = '/login';
-          }}
+        <button
+          onClick={handleLogout}
           className="flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
         >
           <LogOut className="mr-3 h-5 w-5" />

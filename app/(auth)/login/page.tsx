@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Card, Button, Input } from '@/components/ui';
 import { Activity, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,15 +20,14 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
-      if (email === 'admin@healthsaas.com' && password === '123') {
-        localStorage.setItem('isAuthenticated', 'true');
-        router.push('/');
-      } else {
-        setError('Invalid email or password. Try admin@healthsaas.com / 123');
-        setLoading(false);
-      }
-    }, 1500);
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (authError) {
+      setError(authError.message);
+      setLoading(false);
+    } else {
+      router.push('/');
+    }
   };
 
   return (
@@ -48,9 +49,7 @@ export default function LoginPage() {
         <Card className="p-8 shadow-xl border-none">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Email Address <span className="text-muted-foreground">use - admin@healthsaas.com</span>
-              </label>
+              <label className="text-sm font-medium leading-none">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -65,14 +64,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Password <span className="text-muted-foreground">pass - 123</span>
-                </label>
-                <button type="button" className="text-xs text-primary hover:underline">
-                  Forgot password?
-                </button>
-              </div>
+              <label className="text-sm font-medium leading-none">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -105,22 +97,18 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Don't have an account?{' '}
-              <button className="font-semibold text-primary hover:underline">
-                Contact Administrator
-              </button>
+              Don&apos;t have an account?{' '}
+              <Link href="/register" className="font-semibold text-primary hover:underline">
+                Create Account
+              </Link>
             </p>
           </div>
         </Card>
 
         <div className="mt-8 text-center text-xs text-muted-foreground">
           <p>&copy; 2026 HealthSaaS Platform. All rights reserved.</p>
-          <div className="mt-2 flex justify-center space-x-4">
-            <button className="hover:underline">Privacy Policy</button>
-            <button className="hover:underline">Terms of Service</button>
-          </div>
         </div>
       </motion.div>
     </div>
