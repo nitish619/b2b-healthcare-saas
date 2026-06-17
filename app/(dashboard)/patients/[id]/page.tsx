@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Patient } from "@/lib/supabase";
 import { Card, Button } from "@/components/ui";
+import { EditPatientModal } from "@/components/patients/EditPatientModal";
 import {
   ArrowLeft,
   User,
@@ -13,6 +14,7 @@ import {
   Mail,
   MapPin,
   Loader2,
+  Pencil,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -25,6 +27,7 @@ export default function PatientDetailsPage({
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
 
   useEffect(() => {
     async function fetchPatient() {
@@ -84,7 +87,19 @@ export default function PatientDetailsPage({
             </p>
           </div>
         </div>
+        <Button onClick={() => setShowEdit(true)}>
+          <Pencil className="mr-2 h-4 w-4" />
+          Edit Patient
+        </Button>
       </div>
+
+      {showEdit && (
+        <EditPatientModal
+          patient={patient}
+          onClose={() => setShowEdit(false)}
+          onSuccess={(updated) => setPatient(updated)}
+        />
+      )}
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Profile card */}
